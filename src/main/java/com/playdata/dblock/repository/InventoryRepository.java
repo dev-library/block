@@ -14,4 +14,8 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Query("select i from Inventory i where i.id = :id")
     Inventory findByIdPessmistic(Long id);
 
+    @Lock(value = LockModeType.OPTIMISTIC)
+    @Query("select i from Inventory i where i.id = :id")
+    Inventory findByIdOptimistic(Long id);
+
 }

@@ -1,6 +1,7 @@
 package com.playdata.dblock.service;
 
 import com.playdata.dblock.entity.Inventory;
+import com.playdata.dblock.facade.OptimisticInventoryFacade;
 import com.playdata.dblock.repository.InventoryRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,18 +16,19 @@ import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest // 통합 테스트, 스프링 컨테이너를 생성해서 테스트 코드가 돌아갑니다.
-// 만약 단위 테스트로 진행하고 싶은경우는 Mock객체를 만들어서 수행합니다.
-public class InventoryTest {
+@SpringBootTest // 통합테스트 : bean 컨테이너를 다 만들고 테스트를 수행합니다.
+// bean이란? : 스프링 빈 컨테이너의 제어를 받는 객체를 총칭하는 명칭
+public class OptimisticInventoryServiceTest {
 
     @Autowired
-    private InventoryService inventoryService;
+    private OptimisticInventoryFacade inventoryService;
 
     @Autowired
     private InventoryRepository inventoryRepository;
 
     @BeforeEach // 실제 테스트 돌리기 전 아이템 1개, 1번Id 부여, 100개 재고로 집어넣기
     public void insert() {
+                                                                // 낙관적락은 버전 필드까지 초기화해야함.
         Inventory inventory = new Inventory(1L, "산타복", 100L, 1L);
         inventoryRepository.saveAndFlush(inventory);
     }
@@ -38,7 +40,7 @@ public class InventoryTest {
 
     @Test
     @DisplayName("100개의 재고를 가진 1번아이템을 1개 감소시키면 99개가 남는다")
-    public void 동시성문제가생기지않는재고감소상황() {
+    public void 동시성문제가생기지않는재고감소상황() throws InterruptedException {
         // given(없음)
 
         // when
@@ -65,7 +67,9 @@ public class InventoryTest {
             executorService.submit(() -> { // 개별 쓰레드가 호출할 요청을 람다로 작성
                 try {
                     inventoryService.decrease(1L, 1L);
-                }finally {
+                } catch(Exception e){
+
+                } finally {
                     countDownLatch.countDown(); // 요청 들어간 쓰레드는 대기상태로 전환
                 }
             });
@@ -80,13 +84,4 @@ public class InventoryTest {
         assertEquals(0, inventory.getCount());
 
     }
-
-
-
-
 }
-
-
-
-
-
