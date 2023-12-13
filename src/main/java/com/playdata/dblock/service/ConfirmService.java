@@ -29,7 +29,8 @@ public class ConfirmService {
         // 레디스에서 아토믹연산화 시켜서 하는 카운트
         //Long count = couponCountRepository.increment(); // 1증가 시킨 후, 증가된 해당 값을 리턴함.
 
-        if(count > 100){
+        if(count >= 100){ // 레디스를 활용하지 않는 경우
+        //if(count > 100){ // 레디스 활용하는 경우
             return; // 발급된 쿠폰이 100개가 넘으면 발급 방지
         }
 

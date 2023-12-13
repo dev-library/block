@@ -50,8 +50,8 @@ public class CouponMQTest {
         }
         countDownLatch.await();
 
-        // 20초 기다리기.
-        Thread.sleep(20000);
+        // 10초 기다리기.
+        Thread.sleep(10000);
 
         assertEquals(100, couponRepository.count());
     }
